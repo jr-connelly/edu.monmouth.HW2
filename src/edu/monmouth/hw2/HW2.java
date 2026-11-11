@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import edu.monmouth.vehicle.Boat;
 import edu.monmouth.vehicle.BoatException;
@@ -20,9 +21,9 @@ import edu.monmouth.vehicle.Vehicle;
 
 public class HW2 {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws BoatException {
 		if (args.length != HW2Constants.EXPECTED_ARGS) {
-			System.err.println("Usage: HW2 <HW2Output.txt> <strings.txt> <vehicles.txt>");
+			System.err.println("Usage: HW2 <outputFile> <stringsFile> <vehiclesFile>");
 			System.exit(HW2Constants.EXIT_BAD_USAGE);
 		}
 		if (!initialize(args[HW2Constants.OUTPUT_ARG])) {
@@ -34,37 +35,69 @@ public class HW2 {
 
 		try {
 			loadStrings(args[HW2Constants.STRINGS_ARG], strings);
-		} 
-		catch (IOException e) {
+		} catch (IOException e) {
 			System.err.println("Cannot read strings file: " + e.getMessage());
 		}
 		try {
 			loadVehicles(args[HW2Constants.VEHICLES_ARG], vehicles);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			System.err.println("Cannot read vehicles file: " + e.getMessage());
 		}
 
-		System.out.println("String List");
+		System.out.println("===== STRING LIST =====");
 		exercise(strings, "Added Later");
 
 		System.out.println();
-		System.out.println("Vehicle List");
+		System.out.println("===== VEHICLE LIST =====");
 		try {
 			exercise(vehicles, new Car(PowerTypes.ELECTRICITY, 2));
 		} catch (CarException e) {
-			System.err.println("Could not create Car to add " + e.getMessage());
+			System.err.println("Could not create Car to add: " + e.getMessage());
 		}
 
 		System.out.println();
-		System.out.println("contains()");
+		System.out.println("===== contains() =====");
 		try {
 			Vehicle inList = new Car(PowerTypes.GASOLINE, 4);
 			Vehicle notInList = new Boat(PowerTypes.DEISEL, 77);
 			System.out.println("contains(" + inList + ") -> " + vehicles.contains(inList));
 			System.out.println("contains(" + notInList + ") -> " + vehicles.contains(notInList));
 		} catch (CarException | BoatException e) {
-			System.err.println("Could not create Vehicle for contains test " + e.getMessage());
+			System.err.println("Could not create Vehicle for contains test: " + e.getMessage());
+		}
+
+		System.out.println("***Homework 2 Modification***");
+		System.out.println(" ");
+		System.out.println("*** size() ***");
+		System.out.println("String list has " + strings.size() + " elements");
+		System.out.println("Vehicle list has " + vehicles.size() + " elements");
+
+		System.out.println();
+		System.out.println("*** ListIterator: STRING LIST ***");
+		printBothWays(strings);
+
+		System.out.println();
+		System.out.println("*** ListIterator: VEHICLE LIST ***");
+		printBothWays(vehicles);
+
+		System.out.println();
+		System.out.println("*** remove(Object) ***");
+		Vehicle toRemove = new Boat(PowerTypes.ELECTRICITY, 42);
+		System.out.println("remove(" + toRemove + ") -> " + vehicles.remove(toRemove));
+		System.out.println("Vehicle list has " + vehicles.size() + " elements");
+		printBothWays(vehicles);
+	}
+
+	/** Prints the list first to last, then last to first, with one ListIterator. */
+	private static <T> void printBothWays(List<T> list) {
+		ListIterator<T> it = list.listIterator();
+		System.out.println("--- Forward ---");
+		while (it.hasNext()) {
+			System.out.println("  " + it.next());
+		}
+		System.out.println("--- Backward ---");
+		while (it.hasPrevious()) {
+			System.out.println("  " + it.previous());
 		}
 	}
 
@@ -106,6 +139,10 @@ public class HW2 {
 		}
 	}
 
+	/**
+	 * Splits and converts only. Range and null validation is delegated to the
+	 * Vehicle constructors. Nothing is trimmed or corrected.
+	 */
 	private static Vehicle parseVehicle(String line) throws CarException, BoatException {
 		String[] f = line.split(HW2Constants.FIELD_SEPARATOR, -1);
 		if (f.length != HW2Constants.VEHICLE_FIELDS) {
@@ -138,20 +175,20 @@ public class HW2 {
 
 	/** Demonstrates isEmpty, iterator, remove(index) and add on any List<T>. */
 	private static <T> void exercise(List<T> list, T toAdd) {
-		System.out.println("isEmpty() " + list.isEmpty());
+		System.out.println("isEmpty() -> " + list.isEmpty());
 		print("Initial contents", list);
 
 		T removed = list.remove(0);
-		System.out.println("remove(0) removed " + removed);
+		System.out.println("remove(0) removed: " + removed);
 		print("After remove(0)", list);
 
 		list.add(toAdd);
-		System.out.println("add() added " + toAdd);
+		System.out.println("add() added: " + toAdd);
 		print("After add", list);
 	}
 
 	private static <T> void print(String title, List<T> list) {
-		System.out.println(title + " size " + list.size());
+		System.out.println("--- " + title + " (size " + list.size() + ") ---");
 		Iterator<T> it = list.iterator();
 		while (it.hasNext()) {
 			System.out.println("  " + it.next());
